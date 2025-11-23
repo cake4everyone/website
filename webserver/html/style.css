@@ -1,0 +1,17 @@
+a.likeabutton {
+	appearance: button;
+	-moz-appearance: button;
+	-webkit-appearance: button;
+	text-decoration: none;
+	font: menu;
+	color: #666;
+	background-color: #333;
+	display: inline-block;
+	padding: 8px 12px;
+	transition: color 0.5s, background-color 0.5s;
+}
+
+a.likeabutton:hover {
+	background-color: #aa8;
+	color: #f98;
+}

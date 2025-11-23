@@ -1,0 +1,42 @@
+{{ template "header" }}
+<head>
+	<title>Account</title>
+</head>
+<body>
+	<h1>My Account</h1>
+	<p>Welcome to your account page (:</p>
+	<p>Your stuff is:</p>
+	<table>
+		<tr>	
+			<th>Username</th>
+			<td>{{ .Username }}</td>
+		</tr>
+		<tr>
+			<th>Email</th>
+			<td>{{ .Email }}</td>
+		</tr>
+		<tr>
+			<th>Name</th>
+			<td>{{ .WhitelistEntry.Name }}</td>
+		</tr>
+		<tr>
+			<th>Nicknames</th>
+			<td>{{ .WhitelistEntry.Nicknames }}</td>
+		</tr>
+		<tr>
+			<th>UUID</th>
+			<td>{{ .WhitelistEntry.UUID }}</td>
+		</tr>
+		<tr>
+			<th>Minecraft Name</th>
+			<td>{{ GetMCName .WhitelistEntry.UUID }}</td>
+		</tr>
+	</table>
+	{{ if IsAdmin .WhitelistEntry }}{{template "admin"}}{{ end}}
+</body>
+{{ template "footer" }}
+
+{{ define "admin" }}
+	<p>Admin Controls:</p>
+	
+{{ end }}

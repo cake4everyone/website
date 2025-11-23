@@ -1,0 +1,7 @@
+
+# Loading aditional files. This is primarily used to load tokens,
+# keys, and other cridentials from files that are filtered by the
+# .gitignore rules
+additionalConfigs:
+  - ../database/connection.yaml # Connection data for mySQL databse
+  - ../auth/auth.yaml # Connection data for mySQL databse
