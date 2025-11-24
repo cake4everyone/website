@@ -14,31 +14,20 @@ function addNickname() {
 	nicknames.appendChild(li);
 }
 
-
 nicknamesData.addEventListener("click", function(event) {
 	if (event.target.classList.contains("deleteBtn")) {
 		event.target.parentElement.remove()
 		return
-	} else if (event.target.classList.contains("saveBtn")) {
+	}
+});
+
+nicknamesData.addEventListener("htmx:configRequest", function(event) {
+	if (event.target.classList.contains("saveBtn")) {
 		let nicknames = []
 		for (let li of document.getElementById("nicknames").children) {
 			nicknames.push(li.children[0].value)
 		}
-		fetch("/account?edit=nicknames", {
-			method: "PATCH",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify(nicknames)
-		}).then(response => {
-			if (!response.ok) {
-				console.error(response)
-				alert("Failed to save nicknames")
-				return
-			}
-			console.log(response)
-			window.location.reload()
-		})
+		event.detail.formData.append("body", JSON.stringify(nicknames))
 		return
 	}
 });

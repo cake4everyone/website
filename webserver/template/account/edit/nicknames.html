@@ -7,6 +7,6 @@
 		{{- end }}
 	</ul>
 	<button onclick="addNickname()">Add</button>
-	<span class="saveBtn">Save</span>
+	<span class="saveBtn" hx-patch="/account?edit=nicknames" hx-ext="jsonBody">Save</span>
 	<a class="likeabutton" href="/account">Cancel</a>
 </div>

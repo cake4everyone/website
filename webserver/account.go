@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"path"
 	"website/auth"
@@ -35,6 +36,7 @@ func handleAccount(w http.ResponseWriter, r *http.Request) {
 		var nicknames database.Nicknames
 		err := json.NewDecoder(r.Body).Decode(&nicknames)
 		if err != nil {
+			log.Printf("Failed to decode nicknames: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
