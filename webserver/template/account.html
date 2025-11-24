@@ -34,13 +34,8 @@
 			<td>{{ GetMCName .WhitelistEntry.UUID }}</td>
 		</tr>
 	</table>
-	{{ if IsAdmin .WhitelistEntry }}{{template "admin"}}{{ end}}
+	{{ if IsAdmin .WhitelistEntry }}{{template "admin" .}}{{ end}}
 	
 	<script src="/assets/account.js"></script>
 </body>
 {{ template "footer" }}
-
-{{ define "admin" }}
-	<p>Admin Controls:</p>
-	
-{{ end }}

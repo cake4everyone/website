@@ -25,7 +25,21 @@ func handleAccountPage(w http.ResponseWriter, r *http.Request) {
 	case QUERY_NICKNAMES:
 		ServeTemplate(w, r, user, "account/edit/nicknames")
 	default:
-		ServeTemplate(w, r, user, "account", "account/nicknames")
+		if !user.WhitelistEntry.IsAdmin() {
+			ServeTemplate(w, r, user, "account", "account/nicknames")
+			return
+		}
+		admin := struct {
+			database.User
+			WhitelistEntries []database.WhitelistEntry
+		}{user, []database.WhitelistEntry{}}
+		if err := database.DB.Model(admin.WhitelistEntries).Preload("Reference").Order("ID").Find(&admin.WhitelistEntries).Error; err != nil {
+			log.Printf("Failed to load all whitelist entries: %v", err)
+			http.Error(w, "Loading whitelist failed!", http.StatusInternalServerError)
+			return
+		}
+		log.Printf("loaded %d entries", len(admin.WhitelistEntries))
+		ServeTemplate(w, r, admin, "account", "account/nicknames", "account/admin", "account/whitelistEntry")
 	}
 }
 

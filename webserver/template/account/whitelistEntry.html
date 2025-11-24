@@ -1,0 +1,13 @@
+{{ define "whitelistEntry" }}
+<tr class="{{ if .IsAdmin }}admin{{ else }}{{ if .IsActive }}active{{ else }}inactive{{ end }}{{ end }}">
+	<td>{{ .ID }}.</td>
+	<td><span class="checkbox"></span></td>
+	<td>{{ GetMCName .UUID }}</td>
+	<td>{{ .Name }}</td>
+	<td>{{ .Nicknames }}</td>
+	<td>{{ if .Reference }}{{ .Reference.ID }}. {{ .Reference.Name }}{{ end }}</td>
+	<td>{{ .DiscordID }}</td>
+</tr>
+{{ end }}
+
+{{ define "whitelistEntry.html" }}{{ template "whitelistEntry" . }}{{ end }}
