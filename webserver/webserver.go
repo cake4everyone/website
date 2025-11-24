@@ -43,8 +43,8 @@ func initHandler() http.Handler {
 
 	r.HandleFunc("/login", handleLoginPage).Methods(http.MethodGet)
 	r.HandleFunc("/login", handleLogin).Methods(http.MethodPost)
-	// r.HandleFunc("/logout", unsetSessionCookie).Methods(http.MethodPost)
 	r.HandleFunc("/account", handleAccountPage).Methods(http.MethodGet)
+	r.HandleFunc("/account", handleAccount).Methods(http.MethodPatch)
 
 	fileServer := http.FileServer(http.Dir(path.Join(rootPath, htmlRoot)))
 	r.PathPrefix("/assets").Handler(http.StripPrefix("/assets", fileServer))

@@ -22,19 +22,20 @@ func (names Nicknames) String() string {
 	return strings.Join(names, ", ")
 }
 
-// Set sets the nicknames from a single string.
-// It supports multiple nicknames separated by commas.
-func (names *Nicknames) Set(new string) {
-	*names = strings.Split(new, ",")
-	for i, n := range *names {
+// Set sets the nicknames from a slice of strings.
+// It sorts and trims given nicknames.
+func (names *Nicknames) Set(new []string) {
+	*names = make(Nicknames, 0, len(new))
+	for _, n := range new {
 		n = strings.TrimSpace(n)
 		if n == "" {
-			*names = append((*names)[:i], (*names)[i+1:]...)
 			continue
 		}
-		(*names)[i] = n
+		*names = append(*names, n)
 	}
-	slices.Sort(*names)
+	slices.SortFunc(*names, func(a, b string) int {
+		return strings.Compare(strings.ToLower(a), strings.ToLower(b))
+	})
 }
 
 // Scan implements the [sql.Scanner] interface for Nicknames.

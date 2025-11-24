@@ -21,7 +21,10 @@
 		</tr>
 		<tr>
 			<th>Nicknames</th>
-			<td>{{ .WhitelistEntry.Nicknames }}</td>
+			<td id="nicknames-data">
+				<span>{{ .WhitelistEntry.Nicknames }}</span>
+				<button hx-get="/account?edit=nicknames" hx-target="closest td">Edit</button>
+			</td>
 		</tr>
 		<tr>
 			<th>UUID</th>
@@ -33,6 +36,8 @@
 		</tr>
 	</table>
 	{{ if IsAdmin .WhitelistEntry }}{{template "admin"}}{{ end}}
+	
+	<script src="/assets/account.js"></script>
 </body>
 {{ template "footer" }}
 

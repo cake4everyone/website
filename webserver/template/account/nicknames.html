@@ -1,0 +1,12 @@
+<div>
+	<ul id="nicknames">
+		{{ range .WhitelistEntry.Nicknames -}}
+		<li>
+			<input type="text" value="{{.}}"></input><span class="deleteBtn">×</span>
+		</li>
+		{{- end }}
+	</ul>
+	<button onclick="addNickname()">Add</button>
+	<span class="saveBtn">Save</span>
+	<a class="likeabutton" href="/account">Cancel</a>
+</div>

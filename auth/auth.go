@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"website/database"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/spf13/viper"
@@ -80,4 +81,24 @@ func IsCookieActive(cookie *http.Cookie) (userID uint, ok bool) {
 	}
 	return IsSessionActive(cookie.Value)
 
+}
+
+// GetUser returns the user that is logged in. The returned user is preloaded
+// with their whitelist entry.
+//
+// On an error, the a reponse will be written on w and abort is set to true to
+// indicate that any further processing should be aborted.
+func GetUser(w http.ResponseWriter, r *http.Request) (user database.User, abort bool) {
+	cookie, _ := r.Cookie("session_user")
+	var ok bool
+	if user.ID, ok = IsCookieActive(cookie); !ok {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return user, true
+	}
+	if err := database.DB.Where(user).Preload("WhitelistEntry").First(&user).Error; err != nil {
+		log.Printf("Could not get user from database: %+v", err)
+		http.Error(w, "Failed to load your user data", http.StatusInternalServerError)
+		return user, true
+	}
+	return user, false
 }
