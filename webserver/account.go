@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"path"
 	"website/auth"
 	"website/database"
+)
+
+const (
+	QUERY_NICKNAMES = "nicknames"
 )
 
 func handleAccountPage(w http.ResponseWriter, r *http.Request) {
@@ -14,9 +17,16 @@ func handleAccountPage(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
-	editMode := r.URL.Query().Get("edit")
-	name := path.Join("account", editMode)
-	ServeTemplate(w, r, name, user)
+	if r.URL.Query().Has(QUERY_NICKNAMES) {
+		ServeTemplate(w, r, user.WhitelistEntry.Nicknames, "account/nicknames")
+		return
+	}
+	switch r.URL.Query().Get("edit") {
+	case QUERY_NICKNAMES:
+		ServeTemplate(w, r, user, "account/edit/nicknames")
+	default:
+		ServeTemplate(w, r, user, "account", "account/nicknames")
+	}
 }
 
 func handleAccount(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +42,7 @@ func handleAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch editMode {
-	case "nicknames":
+	case QUERY_NICKNAMES:
 		var nicknames database.Nicknames
 		err := json.NewDecoder(r.Body).Decode(&nicknames)
 		if err != nil {
@@ -42,7 +52,7 @@ func handleAccount(w http.ResponseWriter, r *http.Request) {
 		}
 		user.WhitelistEntry.Nicknames.Set(nicknames)
 		database.DB.Save(&user.WhitelistEntry)
-		w.WriteHeader(http.StatusOK)
+		ServeTemplate(w, r, user.WhitelistEntry.Nicknames, "account/nicknames")
 		return
 	default:
 		http.Error(w, "unknown edit mode: "+editMode, http.StatusBadRequest)

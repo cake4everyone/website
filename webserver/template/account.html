@@ -22,8 +22,7 @@
 		<tr>
 			<th>Nicknames</th>
 			<td id="nicknames-data">
-				<span>{{ .WhitelistEntry.Nicknames }}</span>
-				<button hx-get="/account?edit=nicknames" hx-target="closest td">Edit</button>
+				{{ template "nicknames" .WhitelistEntry.Nicknames }}
 			</td>
 		</tr>
 		<tr>

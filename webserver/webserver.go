@@ -66,20 +66,22 @@ func ServeFile(w http.ResponseWriter, r *http.Request, name string) {
 	http.ServeFile(w, r, path.Join(rootPath, htmlRoot, name))
 }
 
-func ServeTemplate(w http.ResponseWriter, r *http.Request, name string, v any) {
-	if path.Ext(name) == "" {
-		name += ".html"
+func ServeTemplate(w http.ResponseWriter, r *http.Request, v any, name ...string) {
+	for i, n := range name {
+		if path.Ext(n) == "" {
+			name[i] += ".html"
+		}
 	}
-	tmpl, err := ParseTemplate(name)
+	tmpl, err := ParseTemplate(name...)
 	if err != nil {
-		log.Printf("Could not parse %s template: %+v", path.Base(name), err)
-		http.Error(w, fmt.Sprintf("Failed to load %s page", path.Base(name)), http.StatusInternalServerError)
+		log.Printf("Could not parse %s template: %+v", name, err)
+		http.Error(w, fmt.Sprintf("Failed to load %s page", name), http.StatusInternalServerError)
 		return
 	}
 	err = tmpl.Execute(w, v)
 	if err != nil {
-		log.Printf("Could not execute %s template: %+v", path.Base(name), err)
-		http.Error(w, fmt.Sprintf("Failed to load %s page", path.Base(name)), http.StatusInternalServerError)
+		log.Printf("Could not execute %s template: %+v", name, err)
+		http.Error(w, fmt.Sprintf("Failed to load %s page", name), http.StatusInternalServerError)
 		return
 	}
 }

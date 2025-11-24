@@ -1,0 +1,6 @@
+{{ define "nicknames" }}
+<span>{{ . }}</span>
+<button hx-get="/account?edit=nicknames" hx-target="closest td">Edit</button>
+{{ end }}
+
+{{ define "nicknames.html"}}{{template "nicknames" . }}{{end}} 

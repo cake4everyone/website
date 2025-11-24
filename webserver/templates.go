@@ -19,13 +19,14 @@ func init() {
 	functionMap["IsAdmin"] = func(e database.WhitelistEntry) bool { return e.IsAdmin() }
 }
 
-func ParseTemplate(file string) (tmpl *template.Template, err error) {
-	return template.New(path.Base(file)).
+func ParseTemplate(file ...string) (tmpl *template.Template, err error) {
+	file = append(file, "common.html")
+	for i, f := range file {
+		file[i] = path.Join(rootPath, templateRoot, f)
+	}
+	return template.New(path.Base(file[0])).
 		Funcs(GetFunctionMap()).
-		ParseFiles(
-			path.Join(rootPath, templateRoot, file),
-			path.Join(rootPath, templateRoot, "common.html"),
-		)
+		ParseFiles(file...)
 }
 
 func GetFunctionMap() template.FuncMap {
