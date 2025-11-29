@@ -1,4 +1,8 @@
-{{ define "admin" }}
+{{template "header"}}
+<head>
+	<title>Admin Controls</title>
+</head>
+<body>
 	<h1>Admin Controls</h1>
 	
 	<h2>Whitelist</h2>
@@ -15,4 +19,7 @@
 		</tr>
 		{{ range .WhitelistEntries }}{{ template "whitelistEntry" . }}{{ end }}
 	</table>
-{{ end }}
+
+	<a class="likeabutton" href="/account">Back to my account</a>
+</body>
+{{template "footer"}}

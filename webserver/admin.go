@@ -8,28 +8,28 @@ import (
 	"website/database"
 )
 
-const (
-	QUERY_NICKNAMES = "nicknames"
-)
-
-func handleAccountPage(w http.ResponseWriter, r *http.Request) {
+func handleAdminPage(w http.ResponseWriter, r *http.Request) {
 	user, abort := auth.GetUser(w, r)
 	if abort {
 		return
 	}
-	if r.URL.Query().Has(QUERY_NICKNAMES) {
-		ServeTemplate(w, r, user.WhitelistEntry.Nicknames, "account/nicknames")
+	if !user.WhitelistEntry.IsAdmin() {
+		http.Redirect(w, r, "/account", http.StatusSeeOther)
 		return
 	}
-	switch r.URL.Query().Get("edit") {
-	case QUERY_NICKNAMES:
-		ServeTemplate(w, r, user, "account/edit/nicknames")
-	default:
-		ServeTemplate(w, r, user, "account", "account/nicknames")
+	admin := struct {
+		database.User
+		WhitelistEntries []database.WhitelistEntry
+	}{user, []database.WhitelistEntry{}}
+	if err := database.DB.Model(admin.WhitelistEntries).Preload("Reference").Order("ID").Find(&admin.WhitelistEntries).Error; err != nil {
+		log.Printf("Failed to load all whitelist entries: %v", err)
+		http.Error(w, "Loading whitelist failed!", http.StatusInternalServerError)
+		return
 	}
+	ServeTemplate(w, r, admin, "admin", "account/whitelistEntry")
 }
 
-func handleAccount(w http.ResponseWriter, r *http.Request) {
+func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	editMode := r.URL.Query().Get("edit")
 	if editMode == "" {
 		http.Error(w, "no edit mode", http.StatusBadRequest)

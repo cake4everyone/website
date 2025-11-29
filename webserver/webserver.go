@@ -45,6 +45,8 @@ func initHandler() http.Handler {
 	r.HandleFunc("/login", handleLogin).Methods(http.MethodPost)
 	r.HandleFunc("/account", handleAccountPage).Methods(http.MethodGet)
 	r.HandleFunc("/account", handleAccount).Methods(http.MethodPatch)
+	r.HandleFunc("/admin", handleAdminPage).Methods(http.MethodGet)
+	r.HandleFunc("/admin", handleAdmin).Methods(http.MethodPatch)
 
 	r.HandleFunc("/api/name/{uuid}", handleAPINameLookup).Methods(http.MethodGet)
 

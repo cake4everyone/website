@@ -34,7 +34,9 @@
 			<td hx-get="/api/name/{{ .WhitelistEntry.UUID }}?force" hx-trigger="load">...</td>
 		</tr>
 	</table>
-	{{ if IsAdmin .WhitelistEntry }}{{template "admin" .}}{{ end}}
+	{{ if IsAdmin .WhitelistEntry }}
+	<a class="likeabutton" href="/admin">Admin</a>
+	{{ end }}
 	
 	<script src="/assets/account.js"></script>
 </body>
