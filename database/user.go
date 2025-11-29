@@ -33,10 +33,12 @@ func GetUserByCredentials(username, password string) (user *User) {
 	} else {
 		query = query.Where("email=?", username)
 	}
-	query = query.Find(&user)
+	query = query.First(&user)
 
 	if err := query.Error; err != nil {
 		log.Printf("Failed to get user by credentials: %v", err)
+		return nil
+	} else if user == nil || (*user == User{}) {
 		return nil
 	}
 	return user
