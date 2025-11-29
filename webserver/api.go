@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -14,6 +16,52 @@ import (
 var mutex sync.Mutex
 
 var cache = make(map[string]string)
+
+const (
+	CACHE_FILE = "cache/mc_names.json"
+)
+
+func init() {
+	openCache()
+}
+
+func openCache() {
+	f, err := os.Open(CACHE_FILE)
+	if os.IsNotExist(err) {
+		return
+	} else if err != nil {
+		log.Printf("Failed to open cache: %v", err)
+	}
+	defer f.Close()
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	err = json.NewDecoder(f).Decode(&cache)
+	if err != nil {
+		log.Printf("Failed to decode cache: %v", err)
+	}
+}
+
+func WriteCache() {
+	var err error
+	if err = os.MkdirAll(path.Dir(CACHE_FILE), 0770); err != nil {
+		log.Printf("Failed to create cache directory: %v", err)
+		return
+	}
+	f, err := os.Create(CACHE_FILE)
+	if err != nil {
+		log.Printf("Failed to create cache: %v", err)
+		return
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "	")
+	err = enc.Encode(cache)
+	if err != nil {
+		log.Printf("Failed to encode cache: %v", err)
+	}
+}
 
 func handleAPINameLookup(w http.ResponseWriter, r *http.Request) {
 	uuid := mux.Vars(r)["uuid"]

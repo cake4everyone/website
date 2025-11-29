@@ -1,2 +1,3 @@
 database/connection.yaml
 auth/auth.yaml
+**/cache/*

@@ -31,4 +31,5 @@ func main() {
 	fmt.Println("Press Ctrl+C to stop")
 	<-ctx.Done()
 	fmt.Println("\nShutting down!")
+	webserver.WriteCache()
 }
