@@ -44,6 +44,12 @@
 	{{ if and .WhitelistEntry (IsAdmin .WhitelistEntry) }}
 	<a class="likeabutton" href="/admin">Admin</a>
 	{{ end }}
+
+	{{ if .WhitelistEntry }}
+	<div class="map">
+			<iframe src="https://klara.kesuaheli.de"></iframe>
+	</div>
+	{{ end }}
 	
 	<script src="/assets/account.js"></script>
 </body>
