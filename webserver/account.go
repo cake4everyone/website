@@ -25,7 +25,12 @@ func handleAccountPage(w http.ResponseWriter, r *http.Request) {
 	case QUERY_NICKNAMES:
 		ServeTemplate(w, r, user, "account/edit/nicknames")
 	default:
-		ServeTemplate(w, r, user, "account", "account/nicknames")
+		if user.WhitelistEntry != nil {
+			if err := database.DB.Model(user.WhitelistEntry).Preload("Markers").Preload("Markers.Users").Find(&user.WhitelistEntry).Error; err != nil {
+				log.Printf("Failed to load markers: %v", err)
+			}
+		}
+		ServeTemplate(w, r, user, "account", "account/nicknames", "account/marker")
 	}
 }
 

@@ -47,8 +47,17 @@
 
 	{{ if .WhitelistEntry }}
 	<div class="map">
-			<iframe src="https://klara.kesuaheli.de"></iframe>
+		<iframe src="https://klara.kesuaheli.de"></iframe>
 	</div>
+	<table>
+		<tr>
+			<th colspan="2">From</th>
+			<th colspan="2">To</th>
+			<th>Color</th>
+			<th>Users</th>
+		</tr>
+		{{ range .WhitelistEntry.Markers }}{{ template "marker" . }}{{ end }}
+	</table>
 	{{ end }}
 	
 	<script src="/assets/account.js"></script>

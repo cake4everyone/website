@@ -1,0 +1,14 @@
+{{ define "marker" }}
+<tr>
+	<td>{{ .Point1.X }}</td>
+	<td>{{ .Point1.Z }}</td>
+	<td>{{ .Point2.X }}</td>
+	<td>{{ .Point2.Z }}</td>
+	<td>{{ .Color }}</td>
+	<td>{{ range .Users}}
+		<img src="https://klara.kesuaheli.de/render/face/{{.UUID}}" width="32" title="{{.Nicknames}}">
+	{{ end }}</td>
+</tr>
+{{ end }}
+
+{{ define "marker.html" }}{{ template "marker" . }}{{ end }}

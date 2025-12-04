@@ -49,3 +49,7 @@ func (c *Color) Scan(src any) error {
 func (c Color) Value() (driver.Value, error) {
 	return fmt.Sprintf("%08x", c.ToInt()), nil
 }
+
+func (c Color) String() string {
+	return fmt.Sprintf("%02x%02x%02x%02x", c.R, c.G, c.B, c.A)
+}
