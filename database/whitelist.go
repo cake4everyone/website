@@ -94,6 +94,8 @@ func (e *WhitelistEntry) Equal(other WhitelistEntry) bool {
 const (
 	FlagActive = 1 << iota
 	FlagAdmin
+
+	FlagAll = FlagActive | FlagAdmin
 )
 
 func (e WhitelistEntry) IsActive() bool {
