@@ -16,7 +16,7 @@ type User struct {
 	Discord        string
 	Twitch         string
 	Password       string
-	WhitelistEntry *WhitelistEntry `gorm:"foreignKey:ID;references:ID"`
+	WhitelistEntry *WhitelistEntry `gorm:"foreignKey:ID;references:UserID"`
 }
 
 func GetUserByCredentials(username, password string) (user *User) {

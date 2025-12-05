@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"slices"
@@ -62,14 +63,14 @@ func (names Nicknames) Value() (driver.Value, error) {
 }
 
 type WhitelistEntry struct {
-	ID          int       `gorm:"NOT NULL"`
-	User        *User     `gorm:"foreignKey:ID"`
+	UserID      uint      `gorm:"column:id;NOT NULL"`
+	User        *User     `gorm:"foreignKey:UserID"`
 	UUID        uuid.UUID `gorm:"primaryKey"`
 	Name        string
 	Nicknames   Nicknames
-	ReferenceID int             `gorm:"column:reference"`
-	Reference   *WhitelistEntry `gorm:"foreignKey:ReferenceID;references:ID"`
-	DiscordID   string          `gorm:"unique"`
+	ReferenceID uint            `gorm:"column:reference"`
+	Reference   *WhitelistEntry `gorm:"foreignKey:ReferenceID;references:UserID"`
+	DiscordID   sql.NullString  `gorm:"unique"`
 	Markers     []*Marker       `gorm:"many2many:user_markers"`
 	Flags       int             `gorm:"NOT NULL;default:0"`
 }
@@ -81,7 +82,7 @@ func (WhitelistEntry) TableName() string {
 }
 
 func (e *WhitelistEntry) Equal(other WhitelistEntry) bool {
-	return e.ID == other.ID &&
+	return e.UserID == other.UserID &&
 		e.UUID == other.UUID &&
 		e.Name == other.Name &&
 		e.ReferenceID == other.ReferenceID &&
