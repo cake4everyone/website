@@ -1,4 +1,5 @@
 database/connection.yaml
 auth/auth.yaml
-**/vscode/*
+**/.vscode/*
+!.vscode/launch.json
 **/cache/*
