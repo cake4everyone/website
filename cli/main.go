@@ -19,11 +19,13 @@ import (
 var (
 	debugLogging *bool
 	mockDB       *bool
+	webPort      *int
 )
 
 func init() {
 	debugLogging = flag.Bool("debug", false, "Whether to enable debug logging")
 	mockDB = flag.Bool("mockdb", false, "Whether to mock a database instead of connecting to the real one")
+	webPort = flag.Int("port", 8080, "The port to use for the webserver")
 	flag.Parse()
 	config.Load("config.yaml")
 }
@@ -39,7 +41,7 @@ func main() {
 	database.Connect(*debugLogging, mock)
 	defer database.Close()
 
-	webserver.Start("../webserver")
+	webserver.Start("../webserver", *webPort)
 
 	fmt.Println("Press Ctrl+C to stop")
 	<-ctx.Done()

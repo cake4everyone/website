@@ -15,6 +15,7 @@
 			"program": "cli",
 			"dlvFlags": ["--check-go-version=false"],
 			"args": [
+				"--port=8081",
 				"--mockdb",
 				"--debug"
 			],

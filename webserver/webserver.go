@@ -20,12 +20,11 @@ const (
 	templateRoot = "template"
 )
 
-func Start(path string) {
+func Start(path string, port int) {
 	rootPath = path
 	var (
 		host = ""
-		port = "8080"
-		addr = net.JoinHostPort(host, port)
+		addr = net.JoinHostPort(host, fmt.Sprint(port))
 	)
 	go func() {
 		if err := http.ListenAndServe(addr, initHandler()); err != nil {

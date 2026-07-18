@@ -3,3 +3,4 @@ auth/auth.yaml
 **/.vscode/*
 !.vscode/launch.json
 **/cache/*
+cli/__debug_bin*
