@@ -8,6 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -37,6 +38,8 @@ func Connect(debug bool, mock func()) {
 			}
 			mock()
 		}()
+	} else if viper.IsSet("postgresql") {
+		dialector = connectPostgreSQL()
 	} else if viper.IsSet("mysql") {
 		dialector = connectMySQL()
 	} else if viper.IsSet("sqlite") {
@@ -84,6 +87,21 @@ func connectMySQL() gorm.Dialector {
 	}
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", config.User, config.Password, config.Host, config.Port, config.Database)
 	return mysql.Open(dsn)
+}
+
+func connectPostgreSQL() gorm.Dialector {
+	// setting default values
+	config := connectionConfig{
+		Host: "localhost",
+		Port: 5432,
+	}
+
+	err := viper.UnmarshalKey("postgresql", &config)
+	if err != nil {
+		log.Fatalf("Could not read postgresql connection data from config: %v", err)
+	}
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d", config.Host, config.User, config.Password, config.Database, config.Port)
+	return postgres.Open(dsn)
 }
 
 func connectSQLite(name ...string) gorm.Dialector {
