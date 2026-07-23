@@ -42,6 +42,7 @@ func initHandler() http.Handler {
 
 	r.HandleFunc("/login", handleLoginPage).Methods(http.MethodGet)
 	r.HandleFunc("/login", handleLogin).Methods(http.MethodPost)
+	r.HandleFunc("/login-mc", handleLoginMC).Methods(http.MethodPost)
 	r.HandleFunc("/account", handleAccountPage).Methods(http.MethodGet)
 	r.HandleFunc("/account", handleAccount).Methods(http.MethodPatch)
 	r.HandleFunc("/admin", handleAdminPage).Methods(http.MethodGet)

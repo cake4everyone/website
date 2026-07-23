@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"website/config"
 	"website/database"
+	"website/mclogin"
 	"website/webserver"
 
 	"github.com/google/uuid"
@@ -21,6 +22,7 @@ var (
 	runMigrate   *bool
 	mockDB       *bool
 	webPort      *int
+	mcLoginPort  *int
 )
 
 func init() {
@@ -28,6 +30,7 @@ func init() {
 	runMigrate = flag.Bool("runMigrate", false, "Whether to run auto migration on the database")
 	mockDB = flag.Bool("mockdb", false, "Whether to mock a database instead of connecting to the real one")
 	webPort = flag.Int("port", 8080, "The port to use for the webserver")
+	mcLoginPort = flag.Int("mcLoginPort", 25565, "The port to use for the MC login server")
 	flag.Parse()
 	config.Load("config.yaml")
 }
@@ -44,6 +47,7 @@ func main() {
 	defer database.Close()
 
 	webserver.Start("../webserver", *webPort)
+	mclogin.StartMCLoginServer(*mcLoginPort)
 
 	fmt.Println("Press Ctrl+C to stop")
 	<-ctx.Done()

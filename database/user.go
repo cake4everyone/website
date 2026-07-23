@@ -6,6 +6,7 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -42,4 +43,29 @@ func GetUserByCredentials(username, password string) (user *User) {
 		return nil
 	}
 	return user
+}
+
+func GetMinecraftUUIDByUsername(username string) (UUID uuid.UUID, ID uint) {
+	if len(username) == 0 {
+		return uuid.UUID{}, 0
+	}
+
+	query := DB.Model(User{}).Preload("WhitelistEntry", func(query *gorm.DB) *gorm.DB {
+		return query.Select("id", "uuid")
+	})
+	if regexp.MustCompile(`^\w+$`).MatchString(username) {
+		query = query.Where("username=?", username)
+	} else {
+		query = query.Where("email=?", username)
+	}
+	var user *User
+	query = query.Select("id").First(&user)
+
+	if err := query.Error; err != nil {
+		log.Printf("Failed to get minecraft UUID by username: %v", err)
+		return uuid.UUID{}, 0
+	} else if user == nil || user.WhitelistEntry == nil {
+		return uuid.UUID{}, 0
+	}
+	return user.WhitelistEntry.UUID, user.ID
 }
