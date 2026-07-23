@@ -18,12 +18,14 @@ import (
 
 var (
 	debugLogging *bool
+	runMigrate   *bool
 	mockDB       *bool
 	webPort      *int
 )
 
 func init() {
 	debugLogging = flag.Bool("debug", false, "Whether to enable debug logging")
+	runMigrate = flag.Bool("runMigrate", false, "Whether to run auto migration on the database")
 	mockDB = flag.Bool("mockdb", false, "Whether to mock a database instead of connecting to the real one")
 	webPort = flag.Int("port", 8080, "The port to use for the webserver")
 	flag.Parse()
@@ -38,7 +40,7 @@ func main() {
 	if *mockDB {
 		mock = loadMockData
 	}
-	database.Connect(*debugLogging, mock)
+	database.Connect(*debugLogging, *runMigrate, mock)
 	defer database.Close()
 
 	webserver.Start("../webserver", *webPort)

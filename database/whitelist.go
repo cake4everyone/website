@@ -63,7 +63,7 @@ func (names Nicknames) Value() (driver.Value, error) {
 }
 
 type WhitelistEntry struct {
-	UserID      uint      `gorm:"column:id;NOT NULL"`
+	UserID      uint      `gorm:"column:id;unique;NOT NULL"`
 	User        *User     `gorm:"foreignKey:UserID"`
 	UUID        uuid.UUID `gorm:"primaryKey"`
 	Name        string

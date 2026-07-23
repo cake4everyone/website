@@ -23,7 +23,7 @@ type connectionConfig struct {
 	Database string `mapstructure:"database"`
 }
 
-func Connect(debug bool, mock func()) {
+func Connect(debug, runMigrate bool, mock func()) {
 	log.Println("Connecting to database...")
 
 	var (
@@ -32,12 +32,6 @@ func Connect(debug bool, mock func()) {
 	)
 	if mock != nil {
 		dialector = connectSQLite("file::memory:?cache=shared")
-		defer func() {
-			if err = DB.AutoMigrate(User{}, WhitelistEntry{}, Marker{}); err != nil {
-				log.Fatalf("Could not migrate database: %v", err)
-			}
-			mock()
-		}()
 	} else if viper.IsSet("postgresql") {
 		dialector = connectPostgreSQL()
 	} else if viper.IsSet("mysql") {
@@ -52,11 +46,26 @@ func Connect(debug bool, mock func()) {
 	if err != nil {
 		log.Fatalf("Could not open Gorm database connection: %v", err)
 	}
+
+	// run post function
 	if debug {
 		DB = DB.Debug()
 	}
+	if mock != nil {
+		defer mock()
+	}
+	if mock != nil || runMigrate {
+		defer MustMigrate()
+	}
 
 	log.Println("Connected to database")
+}
+
+// MustMigrate tries to run the DB auto
+func MustMigrate() {
+	if err := DB.AutoMigrate(User{}, WhitelistEntry{}, Marker{}); err != nil {
+		log.Fatalf("Could not migrate database: %v", err)
+	}
 }
 
 // Close closes the database and prevents new queries from starting.
