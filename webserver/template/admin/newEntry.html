@@ -1,0 +1,5 @@
+{{ define "newEntry" }}
+<button class="likeabutton" hx-get="/admin?edit=new_entry" hx-target="closest div.newEntry">Add new</button>
+{{ end }}
+
+{{ define "newEntry.html"}}{{template "newEntry" . }}{{end}} 

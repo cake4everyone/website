@@ -20,6 +20,11 @@
 		{{ range .WhitelistEntries }}{{ template "whitelistEntry" . }}{{ end }}
 	</table>
 
+	
+	<div class="newEntry">
+		{{ template "newEntry" . }}
+	</div>
+
 	<a class="likeabutton" href="/account">Back to my account</a>
 </body>
 {{template "footer"}}

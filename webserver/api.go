@@ -3,12 +3,17 @@ package webserver
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
+	"strconv"
 	"sync"
 	"time"
+	"website/auth"
+	"website/database"
 
 	"github.com/gorilla/mux"
 )
@@ -81,6 +86,73 @@ func handleAPINameLookup(w http.ResponseWriter, r *http.Request) {
 	cache[uuid] = GetMCName(uuid)
 	w.Write([]byte(cache[uuid]))
 	time.Sleep(time.Second)
+}
+
+func handleAPISetActive(w http.ResponseWriter, r *http.Request) {
+	user, abort := auth.GetUser(w, r)
+	if abort {
+		return
+	}
+	if !user.WhitelistEntry.IsAdmin() {
+		http.Redirect(w, r, "/account", http.StatusSeeOther)
+		return
+	}
+
+	bodyData, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("failed to read body: %+v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	bodyVal, err := url.ParseQuery(string(bodyData))
+	if err != nil {
+		log.Printf("failed to parse body: %+v", err)
+		http.Error(w, "Invalid body!", http.StatusBadRequest)
+		return
+	}
+	var body struct {
+		ID     uint
+		Active bool
+	}
+	if !bodyVal.Has("id") || !bodyVal.Has("active") {
+		log.Printf("incomplete body: %s", bodyData)
+		http.Error(w, "missing key(s)", http.StatusBadRequest)
+		return
+	}
+	bodyID, err := strconv.ParseUint(bodyVal.Get("id"), 10, 64)
+	if err != nil {
+		log.Printf("invalid number: %s", bodyVal.Get("id"))
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	body.ID = uint(bodyID)
+	body.Active, err = strconv.ParseBool(bodyVal.Get("active"))
+	if err != nil {
+		log.Printf("invalid bool: %s", bodyVal.Get("active"))
+		http.Error(w, "invalid active", http.StatusBadRequest)
+		return
+	}
+	body.ID = uint(bodyID)
+
+	entry := database.WhitelistEntry{UserID: body.ID}
+	if err = database.DB.Where(entry).Find(&entry).Error; err != nil {
+		log.Printf("Failed to get whitelist entry by ID: %+v", err)
+		http.Error(w, "Couldn't load whitelist!", http.StatusInternalServerError)
+		return
+	}
+	if entry.IsActive() == body.Active {
+		http.Error(w, "Unchanged", http.StatusPreconditionFailed)
+		return
+	}
+	entry.SetActive(body.Active)
+	if err = database.DB.Save(entry).Error; err != nil {
+		log.Printf("Failed to save whitelist entry: %+v", err)
+		http.Error(w, "Failed to update whitelist!", http.StatusInternalServerError)
+		return
+	}
+
+	ServeTemplate(w, r, entry, "account/whitelistEntryCheckbox")
 }
 
 func GetMCName(uuid string) string {

@@ -27,6 +27,31 @@ a.likeabutton:hover {
 	color: #f98;
 }
 
+a.checkbox {
+	appearance: button;
+	-moz-appearance: button;
+	-webkit-appearance: button;
+	text-decoration: none;
+	font: menu;
+	display: inline-block;
+	padding: 3px 3px;
+	transition: color 0.5s, background-color 0.5s;
+}
+
+a.checkbox.active {
+	background-color: #3a3;
+}
+a.checkbox.active:hover {
+	background-color: #8d8;
+}
+
+a.checkbox.inactive {
+	background-color: #a33;
+}
+a.checkbox.inactive:hover {
+	background-color: #d88;
+}
+
 div.map {
 	display: flex;
 	flex-direction: row;

@@ -1,0 +1,10 @@
+{{ define "whitelistEntryCheckbox" }}
+<a	class="checkbox {{ if .IsActive }}active{{ else }}inactive{{ end }}"
+	hx-post="/api/setActive"
+	hx-vals='{"id": "{{ .UserID }}", "active": {{ not .IsActive }}}'
+	hx-target="closest td">
+	{{ if .IsActive }}✅{{ else }}❌{{ end }}
+</a>
+{{ end }}
+
+{{ define "whitelistEntryCheckbox.html" }}{{ template "whitelistEntryCheckbox" . }}{{ end }}

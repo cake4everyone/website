@@ -49,6 +49,7 @@ func initHandler() http.Handler {
 	r.HandleFunc("/admin", handleAdmin).Methods(http.MethodPatch)
 
 	r.HandleFunc("/api/name/{uuid}", handleAPINameLookup).Methods(http.MethodGet)
+	r.HandleFunc("/api/setActive", handleAPISetActive).Methods(http.MethodPost)
 
 	fileServer := http.FileServer(http.Dir(path.Join(rootPath, htmlRoot)))
 	r.PathPrefix("/assets").Handler(http.StripPrefix("/assets", fileServer))
