@@ -99,17 +99,29 @@ const (
 )
 
 func (e WhitelistEntry) IsActive() bool {
-	return e.Flags&FlagActive != 0
+	return e.isFlagged(FlagActive)
 }
 
 func (e *WhitelistEntry) SetActive(state bool) {
-	if state {
-		e.Flags |= FlagActive
-	} else {
-		e.Flags &= ^FlagActive
-	}
+	e.setFlag(FlagActive, state)
 }
 
 func (e WhitelistEntry) IsAdmin() bool {
-	return e.Flags&FlagAdmin != 0
+	return e.isFlagged(FlagAdmin)
+}
+
+func (e *WhitelistEntry) SetAdmin(state bool) {
+	e.setFlag(FlagAdmin, state)
+}
+
+func (e WhitelistEntry) isFlagged(flag int) bool {
+	return e.Flags&flag != 0
+}
+
+func (e *WhitelistEntry) setFlag(flag int, state bool) {
+	if state {
+		e.Flags |= flag
+	} else {
+		e.Flags &= ^flag
+	}
 }

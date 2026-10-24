@@ -71,24 +71,18 @@ func loadMockData() {
 	}
 
 	for username, mockUserData := range mockUsers {
+		user, err := database.NewUser(username, uuid.MustParse(mockUserData.uuid), 1, true)
+		if err != nil {
+			log.Fatalf("Failed to create mock user: %v", err)
+		}
 		pwhash := sha256.Sum256([]byte(username))
-		mockUser := database.User{
-			Email:    fmt.Sprintf("%s@local", username),
-			Username: username,
-			Password: hex.EncodeToString(pwhash[:]),
+		user.Password = hex.EncodeToString(pwhash[:])
+		if err = database.DB.Save(user).Error; err != nil {
+			log.Fatalf("Failed to create mock user: failed to set mock password: %v", err)
 		}
-		if err := database.DB.Save(&mockUser).Error; err != nil {
-			log.Fatalf("Failed to create mock user: %v", err)
-		}
-		log.Printf("User ID is %d (%s)", mockUser.ID, mockUser.CreatedAt)
-		mockUser.WhitelistEntry = &database.WhitelistEntry{
-			UserID: mockUser.ID,
-			UUID:   uuid.MustParse(mockUserData.uuid),
-			Name:   username,
-			Flags:  mockUserData.flags,
-		}
-		if err := database.DB.Save(&mockUser).Error; err != nil {
-			log.Fatalf("Failed to create mock user: %v", err)
+		user.WhitelistEntry.SetAdmin(true)
+		if err = database.DB.Save(user.WhitelistEntry).Error; err != nil {
+			log.Fatalf("Failed to create mock user: failed to set mock admin: %v", err)
 		}
 
 		log.Printf("Created Mock User: '%s'", username)

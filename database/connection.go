@@ -15,6 +15,16 @@ import (
 
 var DB *gorm.DB
 
+type dbBackend int
+
+const (
+	dbBackendPostgreSQL = iota + 1
+	dbBackendMySQL
+	dbBackendSQLite
+)
+
+var activeDBBackend dbBackend
+
 type connectionConfig struct {
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
@@ -95,6 +105,7 @@ func connectMySQL() gorm.Dialector {
 		log.Fatalf("Could not read msql connection data from config: %v", err)
 	}
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", config.User, config.Password, config.Host, config.Port, config.Database)
+	activeDBBackend = dbBackendMySQL
 	return mysql.Open(dsn)
 }
 
@@ -109,7 +120,8 @@ func connectPostgreSQL() gorm.Dialector {
 	if err != nil {
 		log.Fatalf("Could not read postgresql connection data from config: %v", err)
 	}
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d", config.Host, config.User, config.Password, config.Database, config.Port)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=require", config.Host, config.User, config.Password, config.Database, config.Port)
+	activeDBBackend = dbBackendPostgreSQL
 	return postgres.Open(dsn)
 }
 
@@ -117,5 +129,32 @@ func connectSQLite(name ...string) gorm.Dialector {
 	if len(name) == 0 || name[0] == "" {
 		name = []string{viper.GetString("sqlite")}
 	}
+	activeDBBackend = dbBackendSQLite
 	return sqlite.Open(name[0])
+}
+
+func reserveNextID(tableName string) (int64, error) {
+	var (
+		reservedID int64
+		query      string
+	)
+	switch activeDBBackend {
+	case dbBackendPostgreSQL:
+		query = "SELECT nextval(pg_get_serial_sequence(?, 'id'))"
+	case dbBackendMySQL:
+		query = "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?"
+	case dbBackendSQLite:
+		query = "SELECT seq FROM sqlite_sequence WHERE name = ?"
+	default:
+		panic("no active db backend")
+	}
+
+	err := DB.Raw(query, tableName).Scan(&reservedID).Error
+	if err != nil {
+		return 0, err
+	}
+	if activeDBBackend == dbBackendSQLite {
+		reservedID++
+	}
+	return reservedID, nil
 }

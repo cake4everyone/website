@@ -3,6 +3,7 @@ package database
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"regexp"
 
@@ -18,6 +19,43 @@ type User struct {
 	Twitch         string
 	Password       string
 	WhitelistEntry *WhitelistEntry `gorm:"foreignKey:ID;references:UserID"`
+}
+
+func NewUser(username string, uuid uuid.UUID, referenceID uint, isActive bool) (newUser *User, err error) {
+	nextID, err := reserveNextID("users")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newUser = &User{
+		Email:    fmt.Sprintf("%s@local", username),
+		Username: username,
+		Password: "",
+	}
+	newUser.ID = uint(nextID)
+
+	newUser.WhitelistEntry = &WhitelistEntry{
+		UserID:      newUser.ID,
+		UUID:        uuid,
+		Name:        username,
+		Flags:       FlagActive,
+		ReferenceID: referenceID,
+	}
+	newUser.WhitelistEntry.SetActive(isActive)
+
+	log.Printf("whitelist entry (%d): %+v", referenceID, newUser.WhitelistEntry)
+
+	log.Printf("Creating new user with ID %d", newUser.ID)
+	// err = DB.Save(newUser.WhitelistEntry).Error
+	// if err != nil {
+	// 	return newUser, err
+	// }
+	err = DB.Save(newUser).Error
+	if err != nil {
+		return newUser, err
+	}
+	err = DB.Model(newUser).Preload("WhitelistEntry").Find(newUser).Error
+	return newUser, err
 }
 
 func GetUserByCredentials(username, password string) (user *User) {
