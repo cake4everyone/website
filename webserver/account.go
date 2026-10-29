@@ -39,11 +39,6 @@ func showAccountPage(w http.ResponseWriter, r *http.Request, user database.User)
 	case QUERY_MARKER_ADD:
 		ServeTemplate(w, r, user, "account/edit/marker_add")
 	case "":
-		if user.WhitelistEntry != nil {
-			if err := database.DB.Model(user.WhitelistEntry).Preload("Markers").Preload("Markers.Users").Find(&user.WhitelistEntry).Error; err != nil {
-				log.Printf("Failed to load markers: %v", err)
-			}
-		}
 		ServeTemplate(w, r, user, "account", "account/nicknames", "account/markers", "account/marker")
 	default:
 		log.Printf("unknown account edit: %s", editMode)

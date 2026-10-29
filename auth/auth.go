@@ -96,7 +96,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) (user database.User, abort 
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return user, true
 	}
-	if err := database.DB.Where(user).Preload("WhitelistEntry").First(&user).Error; err != nil {
+	if err := database.DB.Where(user).Preload("WhitelistEntry.Markers.Users").First(&user).Error; err != nil {
 		log.Printf("Could not get user from database: %+v", err)
 		http.Error(w, "Failed to load your user data", http.StatusInternalServerError)
 		return user, true
