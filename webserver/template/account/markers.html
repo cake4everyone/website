@@ -1,0 +1,13 @@
+{{ define "markers" }}
+<table>
+	<tr>
+		<th colspan="2">From</th>
+		<th colspan="2">To</th>
+		<th>Color</th>
+		<th>Users</th>
+	</tr>
+	{{ range . }}{{ template "marker" . }}{{ end }}
+</table>
+{{ end }}
+
+{{ define "markers.html" }}{{ template "markers" . }}{{ end }}

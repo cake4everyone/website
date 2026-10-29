@@ -35,7 +35,7 @@ func showAccountPage(w http.ResponseWriter, r *http.Request, user database.User)
 				log.Printf("Failed to load markers: %v", err)
 			}
 		}
-		ServeTemplate(w, r, user, "account", "account/nicknames", "account/marker")
+		ServeTemplate(w, r, user, "account", "account/nicknames", "account/markers", "account/marker")
 	default:
 		log.Printf("unknown account edit: %s", editMode)
 		http.Error(w, "Unknown Mode "+editMode, http.StatusBadRequest)
