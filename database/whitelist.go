@@ -17,7 +17,7 @@ type Nicknames []string
 
 // NICKNAME_SEPARATOR is the separator used to join multiple nicknames into a
 // single string.
-const NICKNAME_SEPARATOR = "\u0000"
+const NICKNAME_SEPARATOR = "|"
 
 func (names Nicknames) String() string {
 	return strings.Join(names, ", ")
