@@ -7,6 +7,7 @@
 	<td>{{ .Nicknames }}</td>
 	<td>{{ if .Reference }}{{ .Reference.UserID }}. {{ .Reference.Name }}{{ end }}</td>
 	<td>{{ .DiscordID }}</td>
+	<td><a class="likeabutton" href="/admin/account/{{ .UserID }}">Show</a></td>
 </tr>
 {{ end }}
 

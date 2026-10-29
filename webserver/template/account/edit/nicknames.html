@@ -7,6 +7,6 @@
 		{{- end }}
 	</ul>
 	<button onclick="addNickname()">Add</button>
-	<span class="saveBtn" hx-patch="/account?edit=nicknames" hx-ext="jsonBody" hx-target="closest td">Save</span>
-	<span hx-get="/account?nicknames" hx-target="closest td">Cancel</span>
+	<span class="saveBtn" hx-patch="?edit=nicknames" hx-ext="jsonBody" hx-target="closest td">Save</span>
+	<span hx-get="?nicknames" hx-target="closest td">Cancel</span>
 </div>

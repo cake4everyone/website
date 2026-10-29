@@ -8,6 +8,8 @@ import (
 	"website/auth"
 	"website/database"
 	"website/types"
+
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -109,4 +111,62 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unknown edit mode: "+editMode, http.StatusBadRequest)
 		return
 	}
+}
+
+func handleAdminAccountPage(w http.ResponseWriter, r *http.Request) {
+	adminUser, abort := auth.GetUser(w, r)
+	if abort {
+		return
+	}
+	if !adminUser.WhitelistEntry.IsAdmin() {
+		http.Redirect(w, r, "/account", http.StatusSeeOther)
+		return
+	}
+
+	stringID := mux.Vars(r)["id"]
+	userID, err := strconv.ParseUint(stringID, 10, 64)
+	if err != nil {
+		log.Printf("Failed to parse user ID '%s': %+v", stringID, err)
+		http.Error(w, "Not a valid user ID", http.StatusBadRequest)
+		return
+	}
+
+	accountUser := database.User{}
+	accountUser.ID = uint(userID)
+	if err := database.DB.Preload("WhitelistEntry.Markers.Users").Find(&accountUser).Error; err != nil || accountUser.Email == "" {
+		log.Printf("Failed to find user '%d': %+v", adminUser.ID, err)
+		http.Error(w, "That user '"+stringID+"' doesnt exist", http.StatusNotFound)
+		return
+	}
+
+	showAccountPage(w, r, accountUser)
+}
+
+func handleAdminAccount(w http.ResponseWriter, r *http.Request) {
+	adminUser, abort := auth.GetUser(w, r)
+	if abort {
+		return
+	}
+	if !adminUser.WhitelistEntry.IsAdmin() {
+		http.Redirect(w, r, "/account", http.StatusSeeOther)
+		return
+	}
+
+	stringID := mux.Vars(r)["id"]
+	userID, err := strconv.ParseUint(stringID, 10, 64)
+	if err != nil {
+		log.Printf("Failed to parse user ID '%s': %+v", stringID, err)
+		http.Error(w, "Not a valid user ID", http.StatusBadRequest)
+		return
+	}
+
+	accountUser := database.User{}
+	accountUser.ID = uint(userID)
+	if err := database.DB.Preload("WhitelistEntry").Find(&accountUser).Error; err != nil || accountUser.Email == "" {
+		log.Printf("Failed to find user '%d': %+v", adminUser.ID, err)
+		http.Error(w, "That user '"+stringID+"' doesnt exist", http.StatusNotFound)
+		return
+	}
+
+	serveAccountEdit(w, r, accountUser)
 }
