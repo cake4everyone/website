@@ -6,7 +6,7 @@
 		<th>Color</th>
 		<th>Users</th>
 	</tr>
-	{{ range . }}{{ template "marker" . }}{{ end }}
+	{{ range . }}<tr>{{ template "marker" . }}</tr>{{ end }}
 </table>
 <button class="likeabutton" hx-get="?edit=marker_add" hx-target="closest div.markers">Add</button>
 {{ end }}

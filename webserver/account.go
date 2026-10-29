@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	QUERY_NICKNAMES  = "nicknames"
-	QUERY_MARKERS    = "markers"
-	QUERY_MARKER_ADD = "marker_add"
+	QUERY_NICKNAMES       = "nicknames"
+	QUERY_MARKERS         = "markers"
+	QUERY_MARKER_ADD      = "marker_add"
+	QUERY_MARKER_USER_ADD = "add_user_to_marker"
 )
 
 func handleAccountPage(w http.ResponseWriter, r *http.Request) {
@@ -127,8 +128,90 @@ func serveAccountEdit(w http.ResponseWriter, r *http.Request, user database.User
 		database.DB.Save(&user.WhitelistEntry)
 		ServeTemplate(w, r, user.WhitelistEntry.Markers, "account/markers", "account/marker")
 		return
+	case QUERY_MARKER_USER_ADD:
+		handleAddUserToMarker(w, r, user)
+		return
 	default:
 		http.Error(w, "unknown edit mode: "+editMode, http.StatusBadRequest)
 		return
 	}
+}
+
+func handleAddUserToMarker(w http.ResponseWriter, r *http.Request, user database.User) {
+	var userIdInput struct {
+		ID string
+	}
+	err := json.NewDecoder(r.Body).Decode(&userIdInput)
+	if err != nil {
+		log.Printf("Failed to decode user: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, err := strconv.ParseUint(userIdInput.ID, 10, 64)
+	if err != nil {
+		log.Printf("Failed to parse user ID '%s': %+v", userIdInput.ID, err)
+		http.Error(w, "Not a valid user ID "+userIdInput.ID, http.StatusBadRequest)
+		return
+	}
+	userAdd := &database.User{}
+	userAdd.ID = uint(userID)
+	if user.ID == userAdd.ID {
+		http.Error(w, "Cant add self to a marker", http.StatusBadRequest)
+		return
+	}
+
+	if err = database.DB.Preload("WhitelistEntry").First(userAdd).Error; err != nil {
+		log.Printf("failed to find user '%d' to add to marker: %+v", userAdd.ID, err)
+		http.Error(w, "User does not exist "+userIdInput.ID, http.StatusBadRequest)
+		return
+	}
+	markerIdInput := r.URL.Query().Get("id")
+	if markerIdInput == "" {
+		http.Error(w, "No marker ID", http.StatusBadRequest)
+		return
+	}
+	markerID, err := strconv.ParseUint(markerIdInput, 10, 64)
+	if err != nil {
+		log.Printf("Failed to parse marker ID '%s': %+v", userIdInput.ID, err)
+		http.Error(w, "Not a valid user ID", http.StatusBadRequest)
+		return
+	}
+	marker := &database.Marker{}
+	marker.ID = uint(markerID)
+	if err = database.DB.Preload("Users").First(marker).Error; err != nil {
+		log.Printf("failed to find user '%d' to add to marker: %+v", marker.ID, err)
+		http.Error(w, "Marker does not exist"+userIdInput.ID, http.StatusBadRequest)
+		return
+	}
+
+	var userInMarker, userAddInMarker bool
+	for _, markerUser := range marker.Users {
+		switch markerUser.UserID {
+		case user.ID:
+			userInMarker = true
+		case userAdd.ID:
+			userAddInMarker = true
+		}
+		if userInMarker && userAddInMarker {
+			break
+		}
+	}
+	if !userInMarker {
+		http.Error(w, "This is not your marker", http.StatusForbidden)
+		return
+	}
+	if userAddInMarker {
+		http.Error(w, "User "+userIdInput.ID+" already in this marker", http.StatusPreconditionFailed)
+		return
+	}
+
+	marker.Users = append(marker.Users, userAdd.WhitelistEntry)
+	if err = database.DB.Save(marker).Error; err != nil {
+		log.Printf("failed to save marker '%d' after user add '%d': %+v", marker.ID, userAdd.ID, err)
+		http.Error(w, "Failed to save marker", http.StatusInternalServerError)
+		return
+	}
+
+	ServeTemplate(w, r, marker, "account/marker")
 }
