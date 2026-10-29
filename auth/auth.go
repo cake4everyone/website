@@ -68,8 +68,9 @@ func IsSessionActive(sessionToken string) (userID uint, ok bool) {
 	if !ok || !token.Valid {
 		return
 	}
+	userID = uint(claims["user_id"].(float64))
 	activeSessions[sessionToken] = session{
-		UserID: uint(claims["user_id"].(float64)),
+		UserID: userID,
 		Exp:    time.Unix(int64(claims["exp"].(float64)), 0),
 	}
 	return
