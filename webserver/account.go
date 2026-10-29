@@ -17,32 +17,44 @@ func handleAccountPage(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
+	showAccountPage(w, r, user)
+}
+
+func showAccountPage(w http.ResponseWriter, r *http.Request, user database.User) {
 	if r.URL.Query().Has(QUERY_NICKNAMES) {
 		ServeTemplate(w, r, user.WhitelistEntry.Nicknames, "account/nicknames")
 		return
 	}
-	switch r.URL.Query().Get("edit") {
+
+	switch editMode := r.URL.Query().Get("edit"); editMode {
 	case QUERY_NICKNAMES:
 		ServeTemplate(w, r, user, "account/edit/nicknames")
-	default:
+	case "":
 		if user.WhitelistEntry != nil {
 			if err := database.DB.Model(user.WhitelistEntry).Preload("Markers").Preload("Markers.Users").Find(&user.WhitelistEntry).Error; err != nil {
 				log.Printf("Failed to load markers: %v", err)
 			}
 		}
 		ServeTemplate(w, r, user, "account", "account/nicknames", "account/marker")
+	default:
+		log.Printf("unknown account edit: %s", editMode)
+		http.Error(w, "Unknown Mode "+editMode, http.StatusBadRequest)
 	}
 }
 
 func handleAccount(w http.ResponseWriter, r *http.Request) {
-	editMode := r.URL.Query().Get("edit")
-	if editMode == "" {
-		http.Error(w, "no edit mode", http.StatusBadRequest)
+	user, abort := auth.GetUser(w, r)
+	if abort {
 		return
 	}
 
-	user, abort := auth.GetUser(w, r)
-	if abort {
+	serveAccountEdit(w, r, user)
+}
+
+func serveAccountEdit(w http.ResponseWriter, r *http.Request, user database.User) {
+	editMode := r.URL.Query().Get("edit")
+	if editMode == "" {
+		http.Error(w, "no edit mode", http.StatusBadRequest)
 		return
 	}
 
