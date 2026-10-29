@@ -1,6 +1,6 @@
 {{ define "nicknames" }}
 <span>{{ . }}</span>
-<button hx-get="?edit=nicknames" hx-target="closest td">Edit</button>
+<button class="likeabutton" hx-get="?edit=nicknames" hx-target="closest td">Edit</button>
 {{ end }}
 
 {{ define "nicknames.html"}}{{template "nicknames" . }}{{end}} 

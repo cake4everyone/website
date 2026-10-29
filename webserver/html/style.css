@@ -9,7 +9,7 @@ body {
 	justify-content: center;
 }
 
-a.likeabutton {
+.likeabutton {
 	appearance: button;
 	-moz-appearance: button;
 	-webkit-appearance: button;
@@ -22,7 +22,7 @@ a.likeabutton {
 	transition: color 0.5s, background-color 0.5s;
 }
 
-a.likeabutton:hover {
+.likeabutton:hover {
 	background-color: #aa8;
 	color: #f98;
 }
