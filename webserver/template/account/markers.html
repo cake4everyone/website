@@ -8,6 +8,7 @@
 	</tr>
 	{{ range . }}{{ template "marker" . }}{{ end }}
 </table>
+<button class="likeabutton" hx-get="?edit=marker_add" hx-target="closest div.markers">Add</button>
 {{ end }}
 
 {{ define "markers.html" }}{{ template "markers" . }}{{ end }}

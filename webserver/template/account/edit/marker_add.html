@@ -1,0 +1,17 @@
+<form hx-patch="?edit=marker_add" hx-ext="jsonBody" hx-trigger="submit" hx-target="closest div.markers">
+
+	<label for="fx1">From X:</label>
+	<input type="number" id="fx1" name="x1" placeholder="From X">
+	<label for="fz1">Z:</label>
+	<input type="number" id="fz1" name="z1" placeholder="From Z"><br>
+	<label for="fx2">To X:</label>
+	<input type="number" id="fx2" name="x2" placeholder="To X">
+	<label for="fz2">Z:</label>
+	<input type="number" id="fz2" name="z2" placeholder="To Z"><br>
+	
+	<label for="fcolor">Color:</label>
+	<input type="color" id="fcolor" name="color"><br>
+	
+	<input type="submit" class="likeabutton saveBtn" value="Save">
+</form>
+<span class="likeabutton" hx-get="?markers" hx-target="closest div.markers">Cancel</span>
