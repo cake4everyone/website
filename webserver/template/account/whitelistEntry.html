@@ -1,13 +1,14 @@
 {{ define "whitelistEntry" }}
-<tr class="{{ if .IsAdmin }}admin{{ else }}{{ if .IsActive }}active{{ else }}inactive{{ end }}{{ end }}">
-	<td>{{ .UserID }}.</td>
-	<td>{{ template "whitelistEntryCheckbox" . }}</td>
-	<td hx-get="/api/name/{{ .UUID }}" hx-trigger="load">...</td>
+<tr class="{{ if .IsAdmin }}admin{{ else }}{{ if .WhitelistEntry.IsActive }}active{{ else }}inactive{{ end }}{{ end }}">
+	<td>{{ .ID }}.</td>
+	<td>{{ template "whitelistEntryCheckbox" .WhitelistEntry }}</td>
+	<td>{{ .Username }}</td>
+	<td>{{ .OnlineName }}</td>
+	<td hx-get="/api/name/{{ .WhitelistEntry.UUID }}" hx-trigger="load">...</td>
 	<td>{{ .Name }}</td>
 	<td>{{ .Nicknames }}</td>
-	<td>{{ if .Reference }}{{ .Reference.UserID }}. {{ .Reference.Name }}{{ end }}</td>
-	<td>{{ .DiscordID }}</td>
-	<td><a class="likeabutton" href="/admin/account/{{ .UserID }}">Show</a></td>
+	<td>{{ .Reference.ID }}. {{ .Reference.OnlineName }}</td>
+	<td><a class="likeabutton" href="/admin/account/{{ .ID }}">Show</a></td>
 </tr>
 {{ end }}
 

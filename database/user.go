@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"slices"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -15,46 +16,47 @@ type User struct {
 	gorm.Model
 	Email          string `gorm:"not null;unique"`
 	Username       string `gorm:"not null;unique"`
+	Name           string
+	OnlineName     string
+	Nicknames      Nicknames
+	ReferenceID    uint
+	Reference      *User
+	Flags          UserFlags `gorm:"NOT NULL;default:0"`
 	Discord        string
 	Twitch         string
 	Password       string
 	WhitelistEntry *WhitelistEntry `gorm:"foreignKey:ID;references:UserID"`
 }
 
-func NewUser(username string, uuid uuid.UUID, referenceID uint, isActive bool) (newUser *User, err error) {
-	nextID, err := reserveNextID("users")
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func NewUser(username string, mcUUID uuid.UUID, referenceID uint, isActive bool) (newUser *User, err error) {
 	newUser = &User{
-		Email:    fmt.Sprintf("%s@local", username),
-		Username: username,
-		Password: "",
-	}
-	newUser.ID = uint(nextID)
-
-	newUser.WhitelistEntry = &WhitelistEntry{
-		UserID:      newUser.ID,
-		UUID:        uuid,
-		Name:        username,
-		Flags:       FlagActive,
+		Email:       fmt.Sprintf("%s@local", username),
+		Username:    username,
+		Password:    "",
 		ReferenceID: referenceID,
 	}
-	newUser.WhitelistEntry.SetActive(isActive)
 
-	log.Printf("whitelist entry (%d): %+v", referenceID, newUser.WhitelistEntry)
-
-	log.Printf("Creating new user with ID %d", newUser.ID)
-	// err = DB.Save(newUser.WhitelistEntry).Error
-	// if err != nil {
-	// 	return newUser, err
-	// }
-	err = DB.Save(newUser).Error
-	if err != nil {
-		return newUser, err
+	if err = DB.Save(newUser).Error; err != nil {
+		return nil, err
 	}
-	err = DB.Model(newUser).Preload("WhitelistEntry").Find(newUser).Error
+	log.Printf("Creating new user with ID %d", newUser.ID)
+
+	if mcUUID == uuid.Nil {
+		return newUser, nil
+	}
+
+	mcAccount := &WhitelistEntry{
+		UserID: newUser.ID,
+		User:   *newUser,
+		UUID:   mcUUID,
+	}
+	mcAccount.SetActive(isActive)
+
+	if err = DB.Save(mcAccount).Error; err != nil {
+		return nil, err
+	}
+
+	newUser.WhitelistEntry = mcAccount
 	return newUser, err
 }
 
@@ -77,33 +79,91 @@ func GetUserByCredentials(username, password string) (user *User) {
 	if err := query.Error; err != nil {
 		log.Printf("Failed to get user by credentials: %v", err)
 		return nil
-	} else if user == nil || (*user == User{}) {
+	} else if user == nil || user.Equal(User{}) {
+		return nil
+	}
+	return user
+}
+
+func GetUserByID(id uint) (user *User, err error) {
+	user = new(User)
+	user.ID = id
+	if err := DB.Preload("WhitelistEntry").First(&user).Error; err != nil {
+		return nil, fmt.Errorf("get user by ID '%d' from database: %w", id, err)
+	}
+	return user, nil
+}
+
+func GetUserByUsername(username string) (user *User) {
+	if len(username) == 0 {
+		return nil
+	}
+
+	query := DB.Model(user)
+	if regexp.MustCompile(`^\w+$`).MatchString(username) {
+		query = query.Where("username=?", username)
+	} else {
+		query = query.Where("email=?", username)
+	}
+	query = query.Preload("WhitelistEntry").First(&user)
+
+	if err := query.Error; err != nil {
+		log.Printf("Failed to get user by username: %v", err)
+		return nil
+	} else if user == nil || user.Equal(User{}) {
 		return nil
 	}
 	return user
 }
 
 func GetMinecraftUUIDByUsername(username string) (UUID uuid.UUID, ID uint) {
-	if len(username) == 0 {
-		return uuid.UUID{}, 0
-	}
-
-	query := DB.Model(User{}).Preload("WhitelistEntry", func(query *gorm.DB) *gorm.DB {
-		return query.Select("id", "uuid")
-	})
-	if regexp.MustCompile(`^\w+$`).MatchString(username) {
-		query = query.Where("username=?", username)
-	} else {
-		query = query.Where("email=?", username)
-	}
-	var user *User
-	query = query.Select("id").First(&user)
-
-	if err := query.Error; err != nil {
-		log.Printf("Failed to get minecraft UUID by username: %v", err)
-		return uuid.UUID{}, 0
-	} else if user == nil || user.WhitelistEntry == nil {
+	user := GetUserByUsername(username)
+	if user == nil {
 		return uuid.UUID{}, 0
 	}
 	return user.WhitelistEntry.UUID, user.ID
+}
+
+func (u *User) Equal(other User) bool {
+	return u.ID == other.ID &&
+		u.Email == other.Email &&
+		u.Username == other.Username &&
+		u.Name == other.Email &&
+		u.OnlineName == other.OnlineName &&
+		u.ReferenceID == other.ReferenceID &&
+		(u.Reference == nil && other.Reference == nil ||
+			u.Reference != nil && other.Reference != nil && u.Reference.Equal(*other.Reference)) &&
+		u.Flags == other.Flags &&
+		u.Discord == other.Discord &&
+		u.Twitch == other.Twitch &&
+		u.Password == other.Password &&
+		slices.Equal(u.Nicknames, other.Nicknames) &&
+		(u.WhitelistEntry == nil && other.WhitelistEntry == nil ||
+			u.WhitelistEntry != nil && other.WhitelistEntry != nil && u.WhitelistEntry.Equal(*other.WhitelistEntry))
+}
+
+type UserFlags int
+
+const (
+	UserFlagAdmin UserFlags = 1 << iota
+)
+
+func (u User) IsAdmin() bool {
+	return u.isFlagged(UserFlagAdmin)
+}
+
+func (u *User) SetAdmin(state bool) {
+	u.setFlag(UserFlagAdmin, state)
+}
+
+func (u User) isFlagged(flag UserFlags) bool {
+	return u.Flags&flag != 0
+}
+
+func (u *User) setFlag(flag UserFlags, state bool) {
+	if state {
+		u.Flags |= flag
+	} else {
+		u.Flags &= ^flag
+	}
 }

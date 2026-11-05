@@ -21,7 +21,7 @@ func handleAdminPage(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
-	if !user.WhitelistEntry.IsAdmin() {
+	if !user.IsAdmin() {
 		http.Redirect(w, r, "/account", http.StatusSeeOther)
 		return
 	}
@@ -34,11 +34,11 @@ func handleAdminPage(w http.ResponseWriter, r *http.Request) {
 		ServeTemplate(w, r, user, "admin/edit/newEntry")
 	default:
 		admin := struct {
-			database.User
-			WhitelistEntries []database.WhitelistEntry
-		}{user, []database.WhitelistEntry{}}
-		if err := database.DB.Model(admin.WhitelistEntries).Preload("Reference").Order("ID").Find(&admin.WhitelistEntries).Error; err != nil {
-			log.Printf("Failed to load all whitelist entries: %v", err)
+			*database.User
+			AllUsers []*database.User
+		}{user, []*database.User{}}
+		if err := database.DB.Model(database.User{}).Preload("Reference").Preload("WhitelistEntry").Order("ID").Find(&admin.AllUsers).Error; err != nil {
+			log.Printf("Failed to load all users: %v", err)
 			http.Error(w, "Loading whitelist failed!", http.StatusInternalServerError)
 			return
 		}
@@ -51,7 +51,7 @@ func handleAdmin(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
-	if !user.WhitelistEntry.IsAdmin() {
+	if !user.IsAdmin() {
 		http.Redirect(w, r, "/account", http.StatusSeeOther)
 		return
 	}
@@ -118,7 +118,7 @@ func handleAdminAccountPage(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
-	if !adminUser.WhitelistEntry.IsAdmin() {
+	if !adminUser.IsAdmin() {
 		http.Redirect(w, r, "/account", http.StatusSeeOther)
 		return
 	}
@@ -131,14 +131,12 @@ func handleAdminAccountPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountUser := database.User{}
-	accountUser.ID = uint(userID)
-	if err := database.DB.Preload("WhitelistEntry.Markers.Users").Find(&accountUser).Error; err != nil || accountUser.Email == "" {
-		log.Printf("Failed to find user '%d': %+v", adminUser.ID, err)
+	accountUser, err := database.GetUserByID(uint(userID))
+	if err != nil {
+		log.Printf("Failed to find user '%d': %+v", userID, err)
 		http.Error(w, "That user '"+stringID+"' doesnt exist", http.StatusNotFound)
 		return
 	}
-
 	showAccountPage(w, r, accountUser)
 }
 
@@ -147,7 +145,7 @@ func handleAdminAccount(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
-	if !adminUser.WhitelistEntry.IsAdmin() {
+	if !adminUser.IsAdmin() {
 		http.Redirect(w, r, "/account", http.StatusSeeOther)
 		return
 	}
@@ -160,13 +158,11 @@ func handleAdminAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountUser := database.User{}
-	accountUser.ID = uint(userID)
-	if err := database.DB.Preload("WhitelistEntry").Find(&accountUser).Error; err != nil || accountUser.Email == "" {
-		log.Printf("Failed to find user '%d': %+v", adminUser.ID, err)
+	accountUser, err := database.GetUserByID(uint(userID))
+	if err != nil {
+		log.Printf("Failed to find user '%d': %+v", userID, err)
 		http.Error(w, "That user '"+stringID+"' doesnt exist", http.StatusNotFound)
 		return
 	}
-
 	serveAccountEdit(w, r, accountUser)
 }

@@ -93,7 +93,7 @@ func handleAPISetActive(w http.ResponseWriter, r *http.Request) {
 	if abort {
 		return
 	}
-	if !user.WhitelistEntry.IsAdmin() {
+	if !user.IsAdmin() {
 		http.Redirect(w, r, "/account", http.StatusSeeOther)
 		return
 	}

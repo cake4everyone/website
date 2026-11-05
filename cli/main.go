@@ -58,15 +58,14 @@ func main() {
 func loadMockData() {
 	mockUsers := map[string]struct {
 		uuid  string
-		flags int
+		admin bool
 	}{
 		"Kesu": {
 			uuid:  "042f47d5-9a3c-4c98-9a50-c71f38f38ed0",
-			flags: database.FlagAll,
+			admin: true,
 		},
 		"test123": {
-			uuid:  "853c80ef-3c37-49fd-aa49-938b674adae6", // Jeb_
-			flags: database.FlagActive,
+			uuid: "853c80ef-3c37-49fd-aa49-938b674adae6", // Jeb_
 		},
 	}
 
@@ -77,10 +76,10 @@ func loadMockData() {
 		}
 		pwhash := sha256.Sum256([]byte(username))
 		user.Password = hex.EncodeToString(pwhash[:])
+		user.SetAdmin(mockUserData.admin)
 		if err = database.DB.Save(user).Error; err != nil {
 			log.Fatalf("Failed to create mock user: failed to set mock password: %v", err)
 		}
-		user.WhitelistEntry.SetAdmin(true)
 		if err = database.DB.Save(user.WhitelistEntry).Error; err != nil {
 			log.Fatalf("Failed to create mock user: failed to set mock admin: %v", err)
 		}

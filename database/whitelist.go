@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"slices"
@@ -63,16 +62,11 @@ func (names Nicknames) Value() (driver.Value, error) {
 }
 
 type WhitelistEntry struct {
-	UserID      uint      `gorm:"column:id;unique;NOT NULL"`
-	User        *User     `gorm:"foreignKey:UserID"`
-	UUID        uuid.UUID `gorm:"primaryKey"`
-	Name        string
-	Nicknames   Nicknames
-	ReferenceID uint            `gorm:"column:reference"`
-	Reference   *WhitelistEntry `gorm:"foreignKey:ReferenceID;references:UserID"`
-	DiscordID   sql.NullString  `gorm:"unique"`
-	Markers     []*Marker       `gorm:"many2many:user_markers"`
-	Flags       int             `gorm:"NOT NULL;default:0"`
+	UserID  uint `gorm:"column:id;NOT NULL"`
+	User    User
+	UUID    uuid.UUID `gorm:"primaryKey"`
+	Markers []*Marker `gorm:"many2many:user_markers"`
+	Flags   UserFlags `gorm:"NOT NULL;default:0"`
 }
 
 // TableName implements [schema.Tabler] interface.
@@ -84,41 +78,26 @@ func (WhitelistEntry) TableName() string {
 func (e *WhitelistEntry) Equal(other WhitelistEntry) bool {
 	return e.UserID == other.UserID &&
 		e.UUID == other.UUID &&
-		e.Name == other.Name &&
-		e.ReferenceID == other.ReferenceID &&
-		e.DiscordID == other.DiscordID &&
-		slices.Equal(e.Nicknames, other.Nicknames) &&
 		slices.Equal(e.Markers, other.Markers)
 }
 
 const (
-	FlagActive = 1 << iota
-	FlagAdmin
-
-	FlagAll = FlagActive | FlagAdmin
+	MinecraftFlagActive UserFlags = 1 << iota
 )
 
 func (e WhitelistEntry) IsActive() bool {
-	return e.isFlagged(FlagActive)
+	return e.isFlagged(MinecraftFlagActive)
 }
 
 func (e *WhitelistEntry) SetActive(state bool) {
-	e.setFlag(FlagActive, state)
+	e.setFlag(MinecraftFlagActive, state)
 }
 
-func (e WhitelistEntry) IsAdmin() bool {
-	return e.isFlagged(FlagAdmin)
-}
-
-func (e *WhitelistEntry) SetAdmin(state bool) {
-	e.setFlag(FlagAdmin, state)
-}
-
-func (e WhitelistEntry) isFlagged(flag int) bool {
+func (e WhitelistEntry) isFlagged(flag UserFlags) bool {
 	return e.Flags&flag != 0
 }
 
-func (e *WhitelistEntry) setFlag(flag int, state bool) {
+func (e *WhitelistEntry) setFlag(flag UserFlags, state bool) {
 	if state {
 		e.Flags |= flag
 	} else {

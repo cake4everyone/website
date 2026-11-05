@@ -9,7 +9,7 @@ import (
 var functionMap = make(template.FuncMap)
 
 func init() {
-	functionMap["IsAdmin"] = func(e database.WhitelistEntry) bool { return e.IsAdmin() }
+	functionMap["IsAdmin"] = func(u database.User) bool { return u.IsAdmin() }
 }
 
 func ParseTemplate(file ...string) (tmpl *template.Template, err error) {

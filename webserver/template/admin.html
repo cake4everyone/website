@@ -6,18 +6,19 @@
 	<h1>Admin Controls</h1>
 	
 	<h2>Whitelist</h2>
-	<p>Currently has {{ len .WhitelistEntries }} entries.</p>
+	<p>Currently has {{ len .AllUsers }} entries.</p>
 	<table>
 		<tr>
 			<th>ID</th>
 			<th>Active</th>
+			<th>Username</th>
+			<th>Online Name</th>
 			<th>Minecraft</th>
 			<th>Name</th>
 			<th>Nicknames</th>
 			<th>Reference</th>
-			<th>Discord</th>
 		</tr>
-		{{ range .WhitelistEntries }}{{ template "whitelistEntry" . }}{{ end }}
+		{{ range .AllUsers }}{{ template "whitelistEntry" . }}{{ end }}
 	</table>
 
 	

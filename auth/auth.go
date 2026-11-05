@@ -89,17 +89,18 @@ func IsCookieActive(cookie *http.Cookie) (userID uint, ok bool) {
 //
 // On an error, the a reponse will be written on w and abort is set to true to
 // indicate that any further processing should be aborted.
-func GetUser(w http.ResponseWriter, r *http.Request) (user database.User, abort bool) {
+func GetUser(w http.ResponseWriter, r *http.Request) (user *database.User, abort bool) {
 	cookie, _ := r.Cookie("session_user")
-	var ok bool
-	if user.ID, ok = IsCookieActive(cookie); !ok {
+	id, ok := IsCookieActive(cookie)
+	if !ok {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return user, true
+		return nil, true
 	}
-	if err := database.DB.Where(user).Preload("WhitelistEntry.Markers.Users").First(&user).Error; err != nil {
-		log.Printf("Could not get user from database: %+v", err)
+	var err error
+	if user, err = database.GetUserByID(id); err != nil {
+		log.Printf("Could not get user from database: ID='%d'; %+v", id, err)
 		http.Error(w, "Failed to load your user data", http.StatusInternalServerError)
-		return user, true
+		return nil, true
 	}
 	return user, false
 }

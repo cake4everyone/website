@@ -15,17 +15,21 @@
 			<th>Email</th>
 			<td>{{ .Email }}</td>
 		</tr>
-		{{ if .WhitelistEntry }}
 		<tr>
 			<th>Name</th>
-			<td>{{ .WhitelistEntry.Name }}</td>
+			<td>{{ .Name }}</td>
+		</tr>
+		<tr>
+			<th>Online Name</th>
+			<td>{{ .OnlineName }}</td>
 		</tr>
 		<tr>
 			<th>Nicknames</th>
 			<td id="nicknames-data">
-				{{ template "nicknames" .WhitelistEntry.Nicknames }}
+				{{ template "nicknames" .Nicknames }}
 			</td>
 		</tr>
+		{{ if .WhitelistEntry }}
 		<tr>
 			<th>UUID</th>
 			<td>{{ .WhitelistEntry.UUID }}</td>
@@ -41,7 +45,7 @@
 		</tr>
 		{{ end }}
 	</table>
-	{{ if and .WhitelistEntry (IsAdmin .WhitelistEntry) }}
+	{{ if and .WhitelistEntry (IsAdmin .) }}
 	<a class="likeabutton" href="/admin">Admin</a>
 	{{ end }}
 

@@ -25,9 +25,9 @@ func handleAccountPage(w http.ResponseWriter, r *http.Request) {
 	showAccountPage(w, r, user)
 }
 
-func showAccountPage(w http.ResponseWriter, r *http.Request, user database.User) {
+func showAccountPage(w http.ResponseWriter, r *http.Request, user *database.User) {
 	if r.URL.Query().Has(QUERY_NICKNAMES) {
-		ServeTemplate(w, r, user.WhitelistEntry.Nicknames, "account/nicknames")
+		ServeTemplate(w, r, user.Nicknames, "account/nicknames")
 		return
 	} else if r.URL.Query().Has(QUERY_MARKERS) {
 		ServeTemplate(w, r, user.WhitelistEntry.Markers, "account/markers", "account/marker")
@@ -56,7 +56,7 @@ func handleAccount(w http.ResponseWriter, r *http.Request) {
 	serveAccountEdit(w, r, user)
 }
 
-func serveAccountEdit(w http.ResponseWriter, r *http.Request, user database.User) {
+func serveAccountEdit(w http.ResponseWriter, r *http.Request, user *database.User) {
 	editMode := r.URL.Query().Get("edit")
 	if editMode == "" {
 		http.Error(w, "no edit mode", http.StatusBadRequest)
@@ -72,9 +72,9 @@ func serveAccountEdit(w http.ResponseWriter, r *http.Request, user database.User
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		user.WhitelistEntry.Nicknames.Set(nicknames)
-		database.DB.Save(&user.WhitelistEntry)
-		ServeTemplate(w, r, user.WhitelistEntry.Nicknames, "account/nicknames")
+		user.Nicknames.Set(nicknames)
+		database.DB.Save(user)
+		ServeTemplate(w, r, user.Nicknames, "account/nicknames")
 		return
 	case QUERY_MARKER_ADD:
 		var newMarkerInput struct {
@@ -137,7 +137,7 @@ func serveAccountEdit(w http.ResponseWriter, r *http.Request, user database.User
 	}
 }
 
-func handleAddUserToMarker(w http.ResponseWriter, r *http.Request, user database.User) {
+func handleAddUserToMarker(w http.ResponseWriter, r *http.Request, user *database.User) {
 	var userIdInput struct {
 		ID string
 	}

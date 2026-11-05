@@ -133,29 +133,3 @@ func connectSQLite(name ...string) gorm.Dialector {
 	activeDBBackend = dbBackendSQLite
 	return sqlite.Open(name[0])
 }
-
-func reserveNextID(tableName string) (int64, error) {
-	var (
-		reservedID int64
-		query      string
-	)
-	switch activeDBBackend {
-	case dbBackendPostgreSQL:
-		query = "SELECT nextval(pg_get_serial_sequence(?, 'id'))"
-	case dbBackendMySQL:
-		query = "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?"
-	case dbBackendSQLite:
-		query = "SELECT seq FROM sqlite_sequence WHERE name = ?"
-	default:
-		panic("no active db backend")
-	}
-
-	err := DB.Raw(query, tableName).Scan(&reservedID).Error
-	if err != nil {
-		return 0, err
-	}
-	if activeDBBackend == dbBackendSQLite {
-		reservedID++
-	}
-	return reservedID, nil
-}
