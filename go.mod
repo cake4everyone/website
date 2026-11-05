@@ -6,12 +6,13 @@ require (
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	gorm.io/gorm v1.31.2
 	github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol v0.0.0
+	gorm.io/gorm v1.31.2
 )
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
+	github.com/Kesuaheli/nbtreader v0.0.0-20261021120422-5ca1498f2a69 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -43,3 +44,5 @@ require (
 )
 
 replace github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol => ../../krasseGOorg/krasserGoMinecraftServer/protocol
+
+replace github.com/kesuaheli/nbtreader => ../../Kesuaheli/nbtreader

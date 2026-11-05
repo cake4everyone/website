@@ -1,5 +1,7 @@
 filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
 filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
+github.com/Kesuaheli/nbtreader v0.0.0-20261021120422-5ca1498f2a69 h1:YlknWM13k6jKdHjGCZEPIHIDzocQ1e0Pej8v/iXMdYY=
+github.com/Kesuaheli/nbtreader v0.0.0-20261021120422-5ca1498f2a69/go.mod h1:ihv002QWaDDL3QxWnnnVvwAgEjswVX6+8I2kY7YChNg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

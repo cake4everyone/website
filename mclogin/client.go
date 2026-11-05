@@ -7,8 +7,11 @@ import (
 
 	"github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/netparse"
 	serverboundHandshake "github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/nettypes/packets/handshake/serverbound"
+	"github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/nettypes/packets/login/clientbound"
 	serverboundLogin "github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/nettypes/packets/login/serverbound"
 	"github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/nettypes/protocolids"
+	"github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/netwrite"
+	"github.com/krasseGOrganisation/krasserGoMinecraftServer/protocol/textcomponent"
 )
 
 type MCLoginClient struct {
@@ -79,9 +82,26 @@ readLoop:
 				break readLoop
 			}
 			//TODO: set encription
-			// netwrite.Write(client, &clientbound.Disconnect{
-			// 	Reason: "Success",
-			// })
+			netwrite.Write(client, &clientbound.Disconnect{
+				Reason: textcomponent.NormalText{
+					Text: "Successfully authenticated!\n",
+					TextBase: textcomponent.TextBase{
+						TextStyle: textcomponent.TextStyle{
+							Color: textcomponent.TextColorGreen,
+						},
+						Extra: []textcomponent.Text{
+							textcomponent.NormalText{
+								Text: "You can now switch back to your browser tab.",
+								TextBase: textcomponent.TextBase{
+									TextStyle: textcomponent.TextStyle{
+										Color: textcomponent.TextColorAqua,
+									},
+								},
+							},
+						},
+					},
+				},
+			})
 			close(ch)
 			break readLoop
 		default:
