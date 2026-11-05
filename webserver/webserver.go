@@ -1,3 +1,5 @@
+// Package webserver serves the web. It handles all the web requests and
+// endpoints.
 package webserver
 
 import (

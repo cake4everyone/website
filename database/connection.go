@@ -1,3 +1,4 @@
+// Package database handles everything related to the database
 package database
 
 import (
